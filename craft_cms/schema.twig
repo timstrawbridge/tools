@@ -1,0 +1,165 @@
+{#
+    template for schema - ld+json
+#}
+
+{# main layout foor Organization types #}
+
+{% script with { type: 'application/ld+json'} %}
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id":"{{ website.url }}",
+        "name": "Name of Organization",
+        "legalName":"Legal name of Organization",
+        "description":"description of organization",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Organization address",
+            "addressLocality": "City",
+            "addressRegion": "State/Region",
+            "postalCode": "post code"
+        },
+        "logo": "{{ logo.image.url }}",
+        "email": "{{ organization.email }}",
+        "telephone": "{{ phone.number }}",
+        "url": "{{ website.url }}",
+        "sameAs":[
+            "{{ socialmedia.link.url }}",
+            "",
+            ""
+        ]
+
+    }
+{% endscript %}    
+
+{# can add below if this is a Local Business #}
+
+{#
+    "@type": "LocalBusiness",      // multiple types can be added, ["",""]
+     "areaServed": {
+            "@type": "GeoCircle",
+            "geoMidpoint":{
+                "@type":"GeoCoordinates",
+                "latitude":"42.259445",
+                "longitude":"-89.064445"  
+            },
+            "geoRadius": "30 mi",
+            "addressCountry": {
+                "@type": "Country",
+                "name": "USA"
+            }
+        },
+        "openingHours":["Mo-Fr 9:00-21:00", "Sa 8:00-19:00", "Su 8:00-19:00"]
+#}
+
+{# add other types, WebPage #}
+
+
+
+
+{# use on a article page #}
+{% script with {type: 'application/ld+json'} %}
+    { 
+        "@context": "https://schema.org", 
+        "@type": "Article",
+        "headline": "{{ entry.title }}",
+        "image": "{{ (entry.image.one.url) ?? null }}",
+        "author": "{{ entry.author }}", 
+        "publisher": {
+        "@type": "Organization",
+        "name": "Name of Organization",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "{{ logo.url }}"
+        }
+        },
+        "url": "{{ entry.url }}",
+        "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "{{ canonical.url }}"
+        },
+        "datePublished": "{{ entry.postDate | date('F j, Y') }}",
+        "dateCreated": "{{ entry.dateCreated | date('F j, Y') }}",
+        "dateModified": "{{ entry.dateUpdated | date('F j, Y') }}",
+        "description": "{{ entry.title }}",
+        "articleBody": "{{ entry.content|striptags() }}"
+    }
+{% endscript %}   
+
+
+{# use on FAQ #}
+{% script with {type: 'application/ld+json'} %}
+    {
+      "@context": "http://schema.org",
+      "@type": "FAQPage",
+      "url": "{{ entryData.url }}",
+      "mainEntity": [
+        {% for faq in block.questionsAnswers.all() %}
+          {
+            "@type": "Question",
+            "name": "{{ faq.question|e }}",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "{{ faq.answer|e }}"
+            }
+          }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }
+{% endscript %}
+
+
+{# use on services #}
+
+{% script with {type:'application/ld+json' } %}
+
+    {
+        "@context": "http://schema.org",
+        "@type":"Service",
+        "serviceType":"type of service offered",
+        "provider":{
+            "@type":"LocalBusiness",
+            "name":"Name of Business"
+        },
+        "areaServed": {
+            "@type": "GeoCircle",
+            "geoMidpoint":{
+                "@type":"GeoCoordinates",
+                "latitude":"42.259445",
+                "longitude":"-89.064445"  
+            },
+            "geoRadius": "30 mi",
+            "addressCountry": {
+                "@type": "Country",
+                "name": "USA"
+            }
+        },
+        "hasOfferCatalog":{
+            "@type":"OfferCatalog",
+            "name":"name of service",
+            "itemListElement":[
+                
+                {% for entry in craft.entries.section("services").all() %}    
+                   
+                    {
+                        "@type":"Offer",
+                        "itemOffered":{
+                            "@type":"Service",
+                            "name":"{{ entry.title }}",
+                            "url":"{{ entry.url }}",
+                            "description":"{{ entry.excerpt }}"
+
+                        } 
+                    }{% if not loop.last %},{% endif %}
+
+                {% endfor %}
+            ]
+        }
+    }
+
+{% endscript %}
+
+
+
+
+
